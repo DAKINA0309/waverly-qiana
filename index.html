@@ -131,7 +131,7 @@ button{border:none;background:none;cursor:pointer;color:inherit;font-family:inhe
 .showreel-controls button:hover{opacity:1}
 .showreel-placeholder .icon{font-size:3rem;opacity:.4;color:var(--accent-gold)}
 .showreel-placeholder .text{font-size:.8rem;letter-spacing:.12em;color:rgba(255,255,255,.5);text-transform:uppercase}
-.showreel-placeholder iframe,.overlay-cover iframe,.overlay-video-wrapper iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.showreel-placeholder video,.overlay-cover video,.overlay-video-wrapper video{position:absolute;inset:0;width:100%;height:100%;border:none;object-fit:cover}
 .showreel-info{text-align:center;max-width:680px;margin:0 auto}
 .showreel-info .quote{font-family:'Noto Serif SC',serif;font-size:1.05rem;line-height:1.9;color:var(--text-secondary);margin-bottom:24px;font-style:italic}
 .showreel-info .credits{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted)}
@@ -652,7 +652,7 @@ html {
     <div class="showreel-wrapper">
       <div class="showreel-cinema">
         <div class="showreel-placeholder">
-          <iframe src="//player.bilibili.com/player.html?bvid=BV1AqgZ68EgF&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen></iframe>
+          <video src="media/fangyuan/video.mp4" autoplay muted loop playsinline controls controlsList="nodownload" disablepictureinpicture></video>
           <div class="showreel-controls">
             <button class="showreel-play-btn" title="Play/Pause">&#9654; &#9646;&#9646;</button>
             <button class="showreel-mute-btn" title="Mute/Unmute">&#9834;</button>
@@ -758,7 +758,7 @@ html {
   <button class="overlay-close" onclick="closeProject()">&times;</button>
   <div class="overlay-content">
     <div class="overlay-cover">
-      <iframe src="//player.bilibili.com/player.html?bvid=BV1AqgZ68EgF&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+      <video src="media/fangyuan/video.mp4" autoplay muted loop playsinline controls controlsList="nodownload" disablepictureinpicture></video>
     </div>
     <h1 class="overlay-project-name">第二颗太阳 · The Second Sun</h1>
     <p class="overlay-project-sub">当太阳仍在燃烧，光却再也无法抵达地球。</p>
@@ -898,7 +898,7 @@ html {
   <button class="overlay-close" onclick="closeProject()">&times;</button>
   <div class="overlay-content">
     <div class="overlay-cover">
-      <iframe src="//player.bilibili.com/player.html?bvid=BV1kqgZ6bEkz&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+      <video src="media/fangyuan/video.mp4" autoplay muted loop playsinline controls controlsList="nodownload" disablepictureinpicture></video>
     </div>
     <h1 class="overlay-project-name">暗恋</h1>
     <p class="overlay-project-sub">有些喜欢，藏在每一次看似不经意的靠近里。</p>
