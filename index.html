@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waverly Qiana — AIGC Video Director</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ===== CSS Variables (Dark Cinematic) ===== */
+:root {
+  --bg-deep: #060608;
+  --bg-primary: #0c0c10;
+  --bg-secondary: #121218;
+  --bg-card: #1a1a22;
+  --bg-elevated: #232330;
+  --text-primary: #f4ecdf;
+  --text-secondary: #aaa49a;
+  --text-muted: #6e6a64;
+  --accent-gold: #c89c4a;
+  --accent-gold-dim: #8a6c30;
+  --accent-warm: #e6c98a;
+  --accent-glow: rgba(200, 156, 74, 0.35);
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-medium: rgba(255,255,255,0.10);
+  --border-gold: rgba(200, 156, 74, 0.25);
+  --overlay-dark: rgba(0,0,0,0.55);
+  --overlay-deeper: rgba(0,0,0,0.78);
+  --nav-height: 72px;
+  --max-width: 1440px;
+  --cinema-ratio: 2.35;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+}
+
+/* ===== Reset ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;overflow-x:hidden;cursor:default;min-height:100vh;position:relative}
+body::before{content:'';position:fixed;inset:0;z-index:-2;background:radial-gradient(ellipse at top,#16161e 0%,var(--bg-deep) 50%),radial-gradient(ellipse at bottom,#1a140a 0%,transparent 60%);pointer-events:none}
+body::after{content:'';position:fixed;inset:0;z-index:-1;background-image:radial-gradient(circle at center,rgba(200,156,74,.025) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;animation:dotShift 60s linear infinite}
+@keyframes dotShift{0%{background-position:0 0}100%{background-position:32px -32px}}
+img,video{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+button{border:none;background:none;cursor:pointer;color:inherit;font-family:inherit}
+
+/* ===== Scrollbar ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg-deep)}
+::-webkit-scrollbar-thumb{background:var(--accent-gold-dim);border-radius:3px}
+
+/* ===== Selection ===== */
+::selection{background:var(--accent-gold);color:#000}
+
+/* ===== Navigation ===== */
+.nav{position:fixed;top:0;left:0;width:100%;z-index:1000;height:var(--nav-height);display:flex;align-items:center;transition:background .5s cubic-bezier(.4,0,.2,1),backdrop-filter .5s,border-color .5s;border-bottom:1px solid transparent}
+.nav.scrolled{background:rgba(12,12,16,.7);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid var(--border-subtle);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+.nav-inner{width:100%;max-width:var(--max-width);margin:0 auto;padding:0 48px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:600;letter-spacing:.15em;color:var(--text-primary);text-transform:uppercase}
+.nav-logo .accent{color:var(--accent-gold)}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{font-size:.78rem;font-weight:400;letter-spacing:.12em;text-transform:uppercase;color:var(--text-secondary);position:relative;transition:color .4s;padding:4px 0}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--accent-gold);box-shadow:0 0 8px var(--accent-gold);transition:width .4s cubic-bezier(.4,0,.2,1)}
+.nav-links a:hover,.nav-links a.active{color:var(--accent-gold)}
+.nav-links a:hover::after,.nav-links a.active::after{width:100%}
+.nav-cta{font-family:'Inter',sans-serif;font-size:.74rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:10px 22px;border-radius:99px;border:1px solid var(--accent-gold);color:var(--accent-gold);transition:all .4s}
+.nav-cta:hover{background:var(--accent-gold);color:#000;box-shadow:0 0 24px var(--accent-glow)}
+.nav-toggle{display:none;flex-direction:column;gap:5px;padding:4px}
+.nav-toggle span{display:block;width:24px;height:1.5px;background:var(--text-primary);transition:all .3s}
+.nav-toggle.active span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
+.nav-toggle.active span:nth-child(2){opacity:0}
+.nav-toggle.active span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
+
+/* ===== Hero Section (Cinematic Full-Screen) ===== */
+.hero{position:relative;width:100%;min-height:100vh;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:calc(var(--nav-height) + 40px) 48px 80px}
+.hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden}
+.hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.7) 80%),linear-gradient(180deg,rgba(0,0,0,.3) 0%,rgba(0,0,0,.55) 100%);z-index:2}
+.hero-bg img,.hero-bg video{width:100%;height:100%;object-fit:cover;filter:brightness(.7) contrast(1.1) saturate(.9);position:absolute;top:0;left:0}
+.hero-content{position:relative;z-index:3;text-align:left;max-width:560px;width:100%;margin-left:58%;opacity:0;transform:translateY(40px);animation:heroReveal 1.6s cubic-bezier(.22,1,.36,1) .3s forwards}
+@keyframes heroReveal{to{opacity:1;transform:translateY(0)}}
+.hero-tag{display:inline-flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-size:.66rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-warm);margin-bottom:22px;padding:6px 14px;border:1px solid var(--border-gold);border-radius:99px;background:rgba(200,156,74,.06)}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent-gold);box-shadow:0 0 12px var(--accent-gold)}
+.hero-name{font-family:'Cinzel',serif;font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:700;letter-spacing:.02em;line-height:.95;color:var(--text-primary);margin-bottom:0;text-transform:uppercase;text-shadow:0 4px 40px rgba(0,0,0,.6)}
+.hero-name .accent{color:var(--accent-gold);font-style:italic;font-weight:400;font-family:'Cormorant Garamond',serif}
+.hero-name-en{font-family:'Cormorant Garamond',serif;font-size:clamp(1.2rem,2vw,1.7rem);font-weight:300;letter-spacing:.12em;color:var(--text-secondary);margin:8px 0 28px;font-style:italic}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(.95rem,1.4vw,1.2rem);font-weight:400;letter-spacing:.18em;color:var(--text-primary);margin-bottom:8px}
+.hero-title-sub{font-family:'Noto Serif SC',serif;font-size:.85rem;font-weight:400;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:32px;line-height:1.8;max-width:480px}
+.hero-buttons{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-start}
+.hero-btn{font-family:'Inter',sans-serif;font-size:.72rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:13px 26px;transition:all .4s;display:inline-flex;align-items:center;gap:10px;border-radius:99px}
+.hero-btn.primary{background:var(--accent-gold);color:#000}
+.hero-btn.primary:hover{background:var(--accent-warm);box-shadow:0 0 32px var(--accent-glow);transform:translateY(-2px)}
+.hero-btn.secondary{border:1px solid var(--border-medium);color:var(--text-primary);background:rgba(255,255,255,.04);backdrop-filter:blur(8px)}
+.hero-btn.secondary:hover{border-color:var(--accent-gold);color:var(--accent-gold);background:rgba(200,156,74,.08)}
+.hero-btn .arrow{transition:transform .4s}
+.hero-btn:hover .arrow{transform:translateX(4px)}
+.hero-scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;animation:heroReveal 1.5s ease 1.5s forwards}
+.hero-scroll-hint span{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted)}
+.hero-scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,var(--accent-gold),transparent);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{opacity:.3;transform:scaleY(.9)}50%{opacity:1;transform:scaleY(1.1)}}
+
+/* ===== Section Common ===== */
+.section{padding:80px 48px;max-width:var(--max-width);margin:0 auto;position:relative}
+.section-label{font-family:'Space Grotesk',sans-serif;font-size:.7rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-gold);margin-bottom:14px;display:inline-flex;align-items:center;gap:8px}
+.section-label::before{content:'';width:24px;height:1px;background:var(--accent-gold)}
+.section-title{font-family:'Cinzel',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:700;letter-spacing:.03em;color:var(--text-primary);margin-bottom:10px;line-height:1.1}
+.section-subtitle{font-family:'Noto Serif SC',serif;font-size:.95rem;font-weight:400;color:var(--text-secondary);margin-bottom:48px;line-height:1.7;max-width:680px}
+.fade-in{opacity:0;transform:translateY(40px)}
+.fade-in.visible{animation:fadeInUp .9s cubic-bezier(.22,1,.36,1) forwards}
+@keyframes fadeInUp{to{opacity:1;transform:translateY(0)}}
+
+/* ===== Showreel ===== */
+.showreel-section{position:relative;padding:80px 48px 50px;overflow:hidden}
+.showreel-section::before{content:'';position:absolute;top:50%;left:50%;width:800px;height:800px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 60%);transform:translate(-50%,-50%);opacity:.25;pointer-events:none}
+.showreel-inner{max-width:var(--max-width);margin:0 auto;position:relative}
+.showreel-header{text-align:center;margin-bottom:48px}
+.showreel-header .section-title{color:var(--text-primary)}
+.showreel-header .section-label{justify-content:center}
+.showreel-header .section-label::before{display:none}
+.showreel-header .section-subtitle{color:var(--text-secondary);margin-left:auto;margin-right:auto;text-align:center}
+.showreel-wrapper{position:relative;width:100%;max-width:1100px;margin:0 auto 48px}
+.showreel-cinema{border:1px solid var(--border-medium);position:relative;background:#000;border-radius:var(--radius-md);overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5),0 0 80px var(--accent-glow)}
+.showreel-cinema::before{content:'';display:block;padding-bottom:42.55%}
+.showreel-placeholder{position:absolute;inset:0;background:#0a0a0a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;overflow:hidden}
+.showreel-placeholder video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.showreel-placeholder .showreel-controls{position:absolute;bottom:0;left:0;right:0;padding:14px;display:flex;align-items:center;gap:12px;opacity:0;transition:opacity .4s;background:linear-gradient(to top,rgba(0,0,0,.8),transparent)}
+.showreel-cinema:hover .showreel-controls{opacity:1}
+.showreel-controls button{color:#fff;font-size:.8rem;opacity:.8;transition:opacity .3s;padding:4px 10px}
+.showreel-controls button:hover{opacity:1}
+.showreel-placeholder .icon{font-size:3rem;opacity:.4;color:var(--accent-gold)}
+.showreel-placeholder .text{font-size:.8rem;letter-spacing:.12em;color:rgba(255,255,255,.5);text-transform:uppercase}
+.showreel-placeholder iframe,.overlay-cover iframe,.overlay-video-wrapper iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.showreel-info{text-align:center;max-width:680px;margin:0 auto}
+.showreel-info .quote{font-family:'Noto Serif SC',serif;font-size:1.05rem;line-height:1.9;color:var(--text-secondary);margin-bottom:24px;font-style:italic}
+.showreel-info .credits{display:flex;flex-wrap:wrap;justify-content:center;gap:24px;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted)}
+
+/* ===== Projects Section ===== */
+.projects-section{position:relative;padding-top:0;padding-bottom:50px}
+.projects-section > .section{padding-top:50px;padding-bottom:0}
+.projects-section .section-title{color:var(--text-primary)}
+.projects-section .section-subtitle{color:var(--text-secondary);margin-bottom:24px}
+
+/* Disable HTML5 video native download button (no downloads allowed) */
+video::-webkit-media-controls-download-button { display: none !important; }
+video::-webkit-media-controls-enclosure { overflow: hidden; }
+video { -webkit-user-select: none; user-select: none; }
+.project-item{display:grid;gap:0;margin-bottom:24px;position:relative;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;transition:border-color .4s,box-shadow .4s}
+.project-item:hover{border-color:var(--border-gold);box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.project-item:last-child{margin-bottom:0}
+.project-item.layout-full{grid-template-columns:1fr}
+.project-item.layout-left{grid-template-columns:1.05fr 1fr}
+.project-item.layout-right{grid-template-columns:1fr 1.05fr}
+.project-cover{position:relative;overflow:hidden;cursor:pointer;background:#0a0a0a;min-height:380px}
+.project-cover .cover-static-badge{position:absolute;top:20px;left:20px;z-index:3;font-family:'Space Grotesk',sans-serif;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.6);padding:8px 16px;border-radius:99px;border:1px solid var(--border-gold);backdrop-filter:blur(8px)}
+.project-cover img{width:100%;height:100%;object-fit:cover;transition:transform 1.4s cubic-bezier(.22,1,.36,1);position:absolute;inset:0}
+.project-cover:hover img{transform:scale(1.06)}
+.project-cover .cover-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.4) 0%,transparent 50%,rgba(0,0,0,.7) 100%);transition:background .6s;z-index:1}
+.project-cover:hover .cover-overlay{background:linear-gradient(135deg,rgba(0,0,0,.5) 0%,transparent 40%,rgba(200,156,74,.15) 100%)}
+.project-cover .cover-info{position:absolute;bottom:0;left:0;right:0;padding:32px 36px;opacity:0;transform:translateY(12px);transition:all .6s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:2}
+.project-cover:hover .cover-info{opacity:1;transform:translateY(0)}
+.cover-info .project-type{font-family:'Space Grotesk',sans-serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-gold);margin-bottom:6px}
+.cover-info .project-name{font-family:'Cinzel',serif;font-size:1.5rem;font-weight:600;letter-spacing:.04em;color:#fff;margin-bottom:4px}
+.cover-info .project-year{font-size:.78rem;letter-spacing:.08em;color:rgba(255,255,255,.7)}
+.project-cover .cover-static-info{position:absolute;top:24px;left:24px;z-index:2}
+.project-cover .cover-static-info .project-type{font-family:'Space Grotesk',sans-serif;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#fff;opacity:.85;margin-bottom:4px}
+.project-cover .cover-static-info .project-num{font-family:'Cinzel',serif;font-size:.85rem;letter-spacing:.15em;color:rgba(255,255,255,.6)}
+.project-details{display:flex;flex-direction:column;justify-content:center;padding:56px 52px;background:var(--bg-card)}
+.layout-right .project-details{border-right:none;border-left:none}
+.project-details .project-category{font-family:'Space Grotesk',sans-serif;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-gold);margin-bottom:14px}
+.project-details .project-title{font-family:'Cinzel',serif;font-size:2.1rem;font-weight:700;letter-spacing:.03em;color:var(--text-primary);margin-bottom:10px;line-height:1.15}
+.project-details .project-tagline{font-family:'Noto Serif SC',serif;font-size:.95rem;color:var(--text-secondary);margin-bottom:28px;font-style:italic}
+.project-details .project-meta{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;margin-bottom:24px;font-size:.78rem;padding:20px 0;border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle)}
+.project-meta .meta-label{color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;font-size:.66rem;margin-bottom:4px}
+.project-meta .meta-value{color:var(--text-primary);font-size:.82rem}
+.project-details .project-desc{font-size:.88rem;line-height:1.85;color:var(--text-secondary);margin-bottom:24px}
+.project-details .project-roles{font-size:.78rem;color:var(--text-muted);line-height:1.7;margin-bottom:32px}
+.project-btn{display:inline-flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;font-size:.76rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-gold);padding:14px 28px;border:1px solid var(--accent-gold);transition:all .4s;align-self:flex-start;background:transparent;border-radius:99px}
+.project-btn:hover{background:var(--accent-gold);color:#000;box-shadow:0 0 32px var(--accent-glow)}
+.project-btn .arrow{transition:transform .4s}
+.project-btn:hover .arrow{transform:translateX(4px)}
+
+/* ===== Project Detail Overlay ===== */
+.project-overlay{position:fixed;inset:0;z-index:2000;background:var(--bg-primary);color:var(--text-primary);overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .6s}
+.project-overlay.active{opacity:1;pointer-events:all}
+.overlay-close{position:fixed;top:32px;right:40px;z-index:2002;width:48px;height:48px;border:1px solid var(--border-medium);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--text-primary);transition:all .4s;background:rgba(0,0,0,.6);backdrop-filter:blur(10px)}
+.overlay-close:hover{border-color:var(--accent-gold);color:var(--accent-gold);transform:rotate(90deg)}
+.overlay-content{max-width:1000px;margin:0 auto;padding:80px 48px 120px}
+.overlay-cover{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;margin-bottom:60px;background:#0a0a0a;border-radius:var(--radius-md);border:1px solid var(--border-subtle);box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.overlay-cover video{width:100%;height:100%;object-fit:cover}
+.overlay-cover .cover-tint{position:absolute;inset:0;background:linear-gradient(to top,var(--bg-primary),transparent 30%);pointer-events:none}
+.overlay-project-name{font-family:'Cinzel',serif;font-size:2.8rem;font-weight:700;letter-spacing:.03em;color:var(--text-primary);margin-bottom:10px;line-height:1.1}
+.overlay-project-sub{font-family:'Noto Serif SC',serif;font-size:1.1rem;color:var(--text-secondary);font-style:italic;margin-bottom:48px}
+.detail-block{margin-bottom:60px}
+.detail-block h2{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;font-weight:400;letter-spacing:.18em;color:var(--accent-gold);margin-bottom:14px;text-transform:uppercase;display:inline-flex;align-items:center;gap:10px}
+.detail-block h2::before{content:'';width:24px;height:1px;background:var(--accent-gold)}
+.detail-block h3{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:500;color:var(--text-primary);margin-bottom:20px}
+.detail-block p{font-size:.88rem;line-height:1.9;color:var(--text-secondary);margin-bottom:12px}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.detail-grid-item{padding:20px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.detail-grid-item .dg-label{font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dark-text-muted);margin-bottom:6px}
+.detail-grid-item .dg-value{font-size:.82rem;color:var(--dark-text-secondary)}
+.storyboard-shot{display:grid;grid-template-columns:120px 1fr;gap:24px;padding:24px;margin-bottom:16px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);border-left:3px solid var(--accent-gold)}
+.storyboard-shot .sb-num{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:var(--accent-gold);line-height:1;align-self:center}
+.storyboard-shot .sb-info{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:.78rem}
+.sb-info .sb-label{color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;font-size:.68rem}
+.sb-info .sb-value{color:var(--text-secondary)}
+.pipeline-flow{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;margin:28px 0}
+.pipeline-step{font-size:.75rem;letter-spacing:.06em;color:var(--text-secondary);padding:12px 22px;border:1px solid var(--border-medium);text-align:center;position:relative;background:var(--bg-card);border-radius:var(--radius-sm)}
+.pipeline-arrow{color:var(--accent-gold);margin:0 4px;font-size:.7rem}
+.challenge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:20px}
+.challenge-item{padding:24px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.challenge-item h4{font-size:.88rem;font-weight:500;color:var(--text-primary);margin-bottom:10px;letter-spacing:.04em}
+.challenge-item p{font-size:.8rem;color:var(--text-secondary);line-height:1.7}
+.overlay-video-wrapper{width:100%;aspect-ratio:16/9;background:#000;display:flex;align-items:center;justify-content:center;margin:20px 0;border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}
+.overlay-video-wrapper .icon{font-size:3rem;color:var(--accent-gold)}
+.overlay-video-wrapper video{width:100%;height:100%;object-fit:cover}
+.overlay-summary{padding:32px;border:1px solid var(--border-gold);margin-top:40px;background:var(--bg-card);border-radius:var(--radius-md)}
+.overlay-summary h3{font-family:'Noto Serif SC',serif;font-size:1.05rem;color:var(--text-primary);margin-bottom:16px}
+.overlay-summary p{font-size:.85rem;color:var(--text-secondary)}
+
+/* ===== Detail Gallery ===== */
+.detail-gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:24px 0}
+.detail-gallery.three-col{grid-template-columns:repeat(3,1fr)}
+.detail-gallery img{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;transition:transform .5s;cursor:pointer;border-radius:var(--radius-sm);border:1px solid var(--border-subtle)}
+.detail-gallery img:hover{transform:scale(1.03);border-color:var(--accent-gold)}
+.detail-gallery.figure-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+.detail-gallery.figure-grid img{aspect-ratio:4/5}
+
+/* ===== Experience Photos ===== */
+.exp-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:20px}
+.exp-photos img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .4s;cursor:pointer;border:1px solid var(--border-subtle);border-radius:var(--radius-sm)}
+.exp-photos img:hover{transform:scale(1.04);border-color:var(--accent-gold);box-shadow:0 0 24px var(--accent-glow)}
+
+/* ===== Lightbox ===== */
+.lightbox{position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:32px;opacity:0;transition:opacity .4s}
+.lightbox.active{display:flex;opacity:1}
+.lightbox img{max-width:96%;max-height:92vh;object-fit:contain;box-shadow:0 24px 80px rgba(0,0,0,.8)}
+.lightbox-close{position:fixed;top:32px;right:40px;z-index:3001;width:48px;height:48px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(0,0,0,.5);color:#fff;font-size:1.4rem;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+.lightbox-close:hover{border-color:var(--accent-gold);color:var(--accent-gold);transform:rotate(90deg)}
+
+/* ===== About Section ===== */
+.about-section{position:relative}
+.about-grid{display:grid;grid-template-columns:380px 1fr;gap:80px;align-items:center}
+.about-portrait{position:relative;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border-gold);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.about-portrait::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 50%,rgba(0,0,0,.4));pointer-events:none}
+.about-portrait img{width:100%;aspect-ratio:3/4;object-fit:cover;filter:saturate(.9) contrast(1.05)}
+.about-text .about-intro{font-family:'Noto Serif SC',serif;font-size:1rem;line-height:2;color:var(--text-secondary);margin-bottom:20px}
+.about-intro strong{color:var(--accent-warm);font-weight:500}
+.about-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+.about-tag{font-size:.72rem;letter-spacing:.08em;padding:9px 20px;border:1px solid var(--border-medium);color:var(--text-secondary);transition:all .4s;background:var(--bg-card);border-radius:99px}
+.about-tag:hover{border-color:var(--accent-gold);color:var(--accent-gold);background:rgba(200,156,74,.08)}
+
+/* ===== Skills Section (XIAOYANG-style capability cards) ===== */
+.skills-section{position:relative;padding-top:0;padding-bottom:50px}
+.skills-section > .section{padding-top:50px;padding-bottom:0}
+.skills-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.skill-category{background:var(--bg-card);border:1px solid var(--border-subtle);padding:36px 32px;transition:all .4s;position:relative;overflow:hidden;border-radius:var(--radius-lg)}
+.skill-category::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 50%);opacity:0;transition:opacity .5s;pointer-events:none}
+.skill-category:hover::before{opacity:.15}
+.skill-category:hover{border-color:var(--border-gold);transform:translateY(-4px);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.skill-category .cat-title{font-family:'Noto Serif SC',serif;font-size:1.25rem;font-weight:500;letter-spacing:.04em;color:var(--text-primary);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.skill-category .cat-title::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--accent-gold),transparent)}
+.skill-category .cat-num{font-family:'Space Grotesk',sans-serif;font-size:.7rem;letter-spacing:.15em;color:var(--accent-gold);font-weight:500}
+.skill-category ul{display:flex;flex-direction:column;gap:10px}
+.skill-category li{font-size:.82rem;color:var(--text-secondary);letter-spacing:.04em;padding:10px 14px;background:rgba(255,255,255,.02);border-radius:var(--radius-sm);transition:all .3s;border:1px solid transparent}
+.skill-category li:hover{background:rgba(200,156,74,.08);border-color:var(--border-gold);color:var(--text-primary)}
+
+/* ===== Experience Section ===== */
+.experience-section{position:relative}
+.experience-section .section-title{color:var(--text-primary)}
+.experience-section .section-subtitle{color:var(--text-secondary)}
+.experience-timeline{position:relative;padding-left:60px}
+.experience-timeline::before{content:'';position:absolute;left:20px;top:0;bottom:0;width:1px;background:var(--border-medium)}
+.exp-item{position:relative;margin-bottom:28px;padding:28px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);transition:border-color .4s}
+.exp-item:hover{border-color:var(--border-gold)}
+.exp-item::before{content:'';position:absolute;left:-50px;top:36px;width:11px;height:11px;border-radius:50%;background:var(--bg-primary);border:2px solid var(--accent-gold);box-shadow:0 0 16px var(--accent-gold);z-index:1}
+.exp-item:last-child{margin-bottom:0}
+.exp-header{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.exp-header .exp-title{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:600;letter-spacing:.04em;color:var(--text-primary)}
+.exp-header .exp-time{font-family:'Space Grotesk',sans-serif;font-size:.72rem;letter-spacing:.15em;color:var(--accent-gold);padding:4px 12px;border:1px solid var(--border-gold);border-radius:99px}
+.exp-role{font-size:.82rem;color:var(--accent-warm);margin-bottom:14px;letter-spacing:.04em}
+.exp-details{font-size:.85rem;color:var(--text-secondary);line-height:1.85}
+
+/* ===== Contact Section ===== */
+.contact-section{position:relative;text-align:center;padding:100px 48px 80px;overflow:hidden}
+.contact-section::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:80px;background:linear-gradient(to bottom,transparent,var(--accent-gold))}
+.contact-section::after{content:'';position:absolute;bottom:-200px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,var(--accent-glow) 0%,transparent 60%);opacity:.2;pointer-events:none}
+.contact-cta{font-family:'Cinzel',serif;font-size:clamp(1.8rem,4vw,3rem);font-weight:700;letter-spacing:.03em;color:var(--text-primary);margin-bottom:16px;line-height:1.2}
+.contact-sub{font-family:'Noto Serif SC',serif;font-size:1rem;color:var(--text-secondary);margin-bottom:56px;line-height:1.8}
+.contact-info-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:32px 56px;margin-bottom:48px;max-width:700px;margin-left:auto;margin-right:auto}
+.contact-info-item{text-align:center}
+.contact-info-item .ci-label{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px}
+.contact-info-item .ci-value{font-size:.88rem;color:var(--text-primary);letter-spacing:.04em}
+.contact-socials{display:flex;justify-content:center;gap:16px;margin-bottom:48px}
+.contact-socials a{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-primary);transition:all .4s;padding:11px 22px;border:1px solid var(--border-medium);background:var(--bg-card);border-radius:99px}
+.contact-socials a:hover{color:var(--accent-gold);border-color:var(--accent-gold);box-shadow:0 0 24px var(--accent-glow)}
+.contact-btn{display:inline-block;font-family:'Inter',sans-serif;font-size:.8rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;padding:18px 48px;background:var(--accent-gold);color:#000;transition:all .4s;border-radius:99px}
+.contact-btn:hover{background:var(--accent-warm);box-shadow:0 0 40px var(--accent-glow);transform:translateY(-2px)}
+.contact-btn-group{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.contact-btn-outline{display:inline-block;font-family:'Inter',sans-serif;font-size:.74rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:13px 30px;border:1px solid var(--border-medium);color:var(--text-primary);transition:all .4s;border-radius:99px}
+.contact-btn-outline:hover{border-color:var(--accent-gold);color:var(--accent-gold)}
+
+/* ===== Footer ===== */
+.footer{text-align:center;padding:36px 48px;border-top:1px solid var(--border-subtle);background:transparent}
+.footer p{font-size:.7rem;letter-spacing:.1em;color:var(--text-muted)}
+
+/* ===== Mobile Nav ===== */
+@media (max-width:768px){
+  .nav-toggle{display:flex;z-index:1001}
+  .nav-links{position:fixed;inset:0;background:rgba(12,12,16,.98);flex-direction:column;justify-content:center;gap:36px;opacity:0;pointer-events:none;transition:opacity .5s}
+.nav-links a{font-size:1.1rem}
+  .nav-links.open{opacity:1;pointer-events:all}
+  .nav-links a{font-size:1rem}
+}
+
+/* ===== Responsive Grid ===== */
+@media (max-width:1024px){
+  .section{padding:70px 32px}
+  .hero{padding:120px 32px 60px}
+  .showreel-section{padding:70px 32px 50px}
+  .about-grid{grid-template-columns:1fr;gap:48px}
+  .about-portrait{max-width:320px;margin:0 auto}
+  .skills-grid{grid-template-columns:repeat(2,1fr)}
+  .project-item.layout-left,.project-item.layout-right{grid-template-columns:1fr}
+  .project-details{padding:48px 36px;border:none}
+  .project-cover{aspect-ratio:16/9}
+  .detail-grid{grid-template-columns:repeat(2,1fr)}
+  .challenge-grid{grid-template-columns:1fr}
+  .storyboard-shot{grid-template-columns:1fr}
+  .pipeline-flow{flex-direction:column;gap:4px}
+  .pipeline-arrow{transform:rotate(90deg)}
+  .experience-timeline{padding-left:40px}
+  .exp-item::before{left:-42px}
+  .contact-section{padding:80px 32px 60px}
+  .nav-inner{padding:0 24px}
+}
+
+@media (max-width:640px){
+  .section{padding:60px 20px}
+  .hero{padding:110px 20px 50px;min-height:auto;justify-content:center}
+  .hero-content{text-align:center;margin-left:0;max-width:560px}
+  .hero-buttons{justify-content:center}
+  .hero-title-sub{margin-left:auto;margin-right:auto}
+  .hero-name{font-size:2.8rem}
+  .hero-buttons{flex-direction:column;align-items:flex-start}
+  .showreel-section{padding:60px 20px 40px}
+  .contact-section{padding:70px 20px 50px}
+  .skills-grid{grid-template-columns:1fr}
+  .detail-grid{grid-template-columns:1fr}
+  .project-details{padding:32px 24px}
+  .project-details .project-title{font-size:1.5rem}
+  .overlay-content{padding:60px 20px 80px}
+  .overlay-project-name{font-size:1.8rem}
+  .overlay-close{top:20px;right:20px}
+  .experience-timeline{padding-left:32px}
+  .exp-item::before{left:-36px}
+  .exp-item{padding:20px}
+  .contact-info-grid{gap:24px 32px}
+  .detail-grid-item{padding:16px}
+}
+
+/* ==================== CINEMATIC EFFECTS ==================== */
+
+/* == Animated background pattern (subtle dots) == */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle at center, rgba(180,160,120,.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  animation: dotShift 60s linear infinite;
+}
+@keyframes dotShift {
+  0% { background-position: 0 0; }
+  100% { background-position: 32px -32px; }
+}
+
+/* Floating light orbs */
+.ambient-orbs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: .08;
+  animation: orbFloat 12s ease-in-out infinite;
+}
+.ambient-orb:nth-child(1) { width: 500px; height: 500px; background: #a47c2e; top: 20%; left: -10%; animation-delay: 0s; animation-duration: 14s; }
+.ambient-orb:nth-child(2) { width: 400px; height: 400px; background: #8b6a3a; top: 50%; right: -8%; animation-delay: -4s; animation-duration: 16s; }
+.ambient-orb:nth-child(3) { width: 350px; height: 350px; background: #665030; bottom: 10%; left: 30%; animation-delay: -8s; animation-duration: 18s; }
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.15); }
+  66% { transform: translate(-20px, 15px) scale(.9); }
+}
+
+/* == Glass morphism == */
+.glass {
+  background: rgba(245,241,234,.75) !important;
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(0,0,0,.06) !important;
+}
+.glass-dark {
+  background: rgba(20,20,26,.78) !important;
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(255,255,255,.06) !important;
+}
+
+/* == Enhanced staggered reveals == */
+.reveal-stagger > * { opacity: 0; transform: translateY(36px); }
+.reveal-stagger.visible > * { animation: revealUp .8s cubic-bezier(.22,1,.36,1) forwards; }
+.reveal-stagger.visible > *:nth-child(1) { animation-delay: 0s; }
+.reveal-stagger.visible > *:nth-child(2) { animation-delay: .1s; }
+.reveal-stagger.visible > *:nth-child(3) { animation-delay: .2s; }
+.reveal-stagger.visible > *:nth-child(4) { animation-delay: .3s; }
+.reveal-stagger.visible > *:nth-child(5) { animation-delay: .4s; }
+.reveal-stagger.visible > *:nth-child(6) { animation-delay: .5s; }
+@keyframes revealUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slides from left/right */
+.reveal-left { opacity: 0; transform: translateX(-40px); transition: all .9s cubic-bezier(.22,1,.36,1); }
+.reveal-right { opacity: 0; transform: translateX(40px); transition: all .9s cubic-bezier(.22,1,.36,1); }
+.reveal-left.visible, .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+/* == Section dividers with gradient line == */
+.section-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(0,0,0,.08), transparent);
+  margin: 0;
+}
+.dark-divider {
+  background: linear-gradient(to right, transparent, rgba(255,255,255,.08), transparent);
+}
+
+/* == Hover glow == */
+.glow-hover {
+  transition: box-shadow .5s, transform .5s;
+}
+.glow-hover:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  transform: translateY(-3px);
+}
+.glow-hover-dark:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.3), 0 0 40px rgba(164,124,46,.08);
+}
+
+/* == Text reveal line by line == */
+.text-reveal {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+.text-reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--bg-primary);
+  transform: translateX(0);
+  transition: transform .8s cubic-bezier(.77,0,.18,1);
+}
+.text-reveal.visible::after {
+  transform: translateX(101%);
+}
+
+/* == Subtle float/breath animation == */
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* == Section fade + scale reveal == */
+.fade-in-scale {
+  opacity: 0;
+  transform: translateY(30px) scale(.97);
+  transition: all 1s cubic-bezier(.22,1,.36,1);
+}
+.fade-in-scale.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* == Smooth scroll experience == */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-height);
+}
+
+/* == Image reveal mask == */
+.img-reveal {
+  clip-path: inset(0 0 0 100%);
+  transition: clip-path 1s cubic-bezier(.77,0,.18,1);
+}
+.img-reveal.visible {
+  clip-path: inset(0 0 0 0);
+}
+
+/* == Button shine effect == */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+  transition: left .6s;
+}
+.btn-shine:hover::after {
+  left: 100%;
+}
+
+/* == Dark section dot pattern == */
+.dot-bg-dark {
+  background-image: radial-gradient(circle, rgba(255,255,255,.025) 1px, transparent 1px) !important;
+  background-size: 24px 24px;
+}
+
+/* == Cursor follower accent == */
+.cursor-accent {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity .4s;
+  mix-blend-mode: difference;
+  transform: translate(-50%, -50%);
+}
+
+/* == Parallax container == */
+.parallax {
+  transform: translateY(0);
+  transition: transform .1s linear;
+}
+
+/* == Smooth image zoom == */
+.zoom-reveal {
+  overflow: hidden;
+}
+.zoom-reveal img {
+  transition: transform 1.6s cubic-bezier(.22,1,.36,1);
+}
+.zoom-reveal.visible img {
+  transform: scale(1);
+}
+.zoom-reveal img {
+  transform: scale(1.08);
+}
+
+/* == Navigation glow underline == */
+.nav-link-glow {
+  position: relative;
+}
+.nav-link-glow::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--accent-gold);
+  box-shadow: 0 0 8px var(--accent-gold);
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.nav-link-glow:hover::after,
+.nav-link-glow.active::after {
+  width: 100%;
+}
+</style>
+</head>
+<body>
+<div class="ambient-orbs">
+  <div class="ambient-orb"></div>
+  <div class="ambient-orb"></div>
+  <div class="ambient-orb"></div>
+</div>
+<div class="cursor-accent" id="cursorAccent"></div>
+
+<!-- ===== Navigation ===== -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#home" class="nav-logo">WQ</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#showreel">Showreel</a>
+      <a href="#projects">Projects</a>
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <a href="#contact" class="nav-cta">Contact</a>
+  </div>
+</nav>
+
+<!-- ===== Hero Section ===== -->
+<section class="hero" id="home">
+  <div class="hero-bg">
+    <video src="media/hero-bg.mp4" autoplay muted loop playsinline></video>
+  </div>
+  <div class="hero-content">
+    <div class="hero-tag">AIGC Video Director · AI Storyteller</div>
+    <h1 class="hero-name">王&nbsp;芹<span class="accent">Waverly&nbsp;Qiana</span></h1>
+    <p class="hero-name-en">Visual Storyteller & Director</p>
+    <p class="hero-title">AIGC Video Director · AI 漫剧导演</p>
+    <p class="hero-title-sub">AI 视频编导 ｜ AI 漫剧创作 ｜ 从剧本、分镜到最终成片</p>
+    <div class="hero-buttons">
+      <a href="#showreel" class="hero-btn primary">View Showreel <span class="arrow">→</span></a>
+      <a href="#projects" class="hero-btn secondary">Explore Projects <span class="arrow">→</span></a>
+      <a href="#contact" class="hero-btn secondary">Contact Me <span class="arrow">→</span></a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- ===== Showreel Section ===== -->
+<section class="showreel-section dot-bg-dark" id="showreel">
+  <div class="showreel-inner fade-in">
+    <div class="showreel-header">
+      <p class="section-label">Showreel</p>
+      <h2 class="section-title">Selected Works</h2>
+    </div>
+    <div class="showreel-wrapper">
+      <div class="showreel-cinema">
+        <div class="showreel-placeholder">
+          <iframe src="//player.bilibili.com/player.html?bvid=BV1AqgZ68EgF&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen></iframe>
+          <div class="showreel-controls">
+            <button class="showreel-play-btn" title="Play/Pause">&#9654; &#9646;&#9646;</button>
+            <button class="showreel-mute-btn" title="Mute/Unmute">&#9834;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="showreel-info">
+      <p class="quote">"通过 AI 视觉生成、导演思维与后期制作，将文字故事转化为完整的视听体验。"</p>
+      <div class="credits">
+        <span>Director / Editor / AIGC Creator</span>
+        <span>·</span>
+        <span>Selected Works 2025–2026</span>
+        <span>·</span>
+        <span>Full Project Breakdown Below</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Projects Section ===== -->
+<section class="projects-section" id="projects">
+  <div class="section fade-in">
+    <p class="section-label">Featured Projects</p>
+    <h2 class="section-title">精选项目</h2>
+    <p class="section-subtitle">从 AI 科幻漫剧到国风文旅影像、真人青春短剧——三类不同形态的导演实践。</p>
+  </div>
+
+  <!-- Project 1: 第二颗太阳 - Full Width -->
+  <div class="project-item layout-full fade-in" style="max-width:var(--max-width);margin-left:auto;margin-right:auto;padding:0 48px;margin-bottom:80px">
+    <div class="project-cover" style="aspect-ratio:21/9" onclick="openProject('sun')">
+      <span class="cover-static-badge">AI 漫剧 · 科幻 · 悬疑 · 2026</span>
+      <img src="media/sun/img_8f99e4f71621c8655ab6c94824981360.png" alt="第二颗太阳">
+      <div class="cover-overlay"></div>
+      <div class="cover-info">
+        <p class="project-type">AI 漫剧 · 科幻 · 悬疑</p>
+        <p class="project-name">第二颗太阳 · The Second Sun</p>
+        <p class="project-year">2026</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project 2: 暗恋 - Left Image Right Text -->
+  <div class="project-item layout-left fade-in" style="max-width:var(--max-width);margin-left:auto;margin-right:auto;padding:0 48px;">
+    <div class="project-cover" style="aspect-ratio:4/3" onclick="openProject('crush')">
+      <span class="cover-static-badge">校园 · 青春 · 2026</span>
+      <img src="media/crush/img_a40aef4e66ec6d1819d24a6134d95a3c.png" alt="暗恋">
+      <div class="cover-overlay"></div>
+      <div class="cover-info">
+        <p class="project-type">校园 · 青春 · 情感</p>
+        <p class="project-name">暗恋</p>
+        <p class="project-year">2026</p>
+      </div>
+    </div>
+    <div class="project-details">
+      <p class="project-category">校园青春短剧</p>
+      <h3 class="project-title">暗恋</h3>
+      <p class="project-tagline">有些喜欢，藏在每一次看似不经意的靠近里。</p>
+      <div class="project-meta">
+        <div><p class="meta-label">类型</p><p class="meta-value">校园 / 青春 / 情感</p></div>
+        <div><p class="meta-label">时长</p><p class="meta-value">3分40秒</p></div>
+        <div><p class="meta-label">制作周期</p><p class="meta-value">7天</p></div>
+        <div><p class="meta-label">职责</p><p class="meta-value">导演 / 编剧 / 后期</p></div>
+      </div>
+      <p class="project-desc">一部以"双向暗恋"为核心的校园青春短剧。通过表白练习、送药和攻略纸条，在生活化细节中建立情感。</p>
+      <p class="project-roles">负责：导演、剧本创作、人物关系设计、分镜规划、演员调度、现场执行、后期剪辑与声音设计</p>
+      <a class="project-btn" onclick="openProject('crush')">查看完整项目 <span class="arrow">→</span></a>
+    </div>
+  </div>
+
+  <!-- Project 3: 仲夏芳园 - Right Image Left Text -->
+  <div class="project-item layout-right fade-in" style="max-width:var(--max-width);margin-left:auto;margin-right:auto;padding:0 48px;">
+    <div class="project-details">
+      <p class="project-category">国风文旅影像</p>
+      <h3 class="project-title">仲夏·芳园</h3>
+      <p class="project-tagline">在一方荷塘与八雅文化之间，重新发现乡村生活的诗意。</p>
+      <div class="project-meta">
+        <div><p class="meta-label">类型</p><p class="meta-value">文旅影像 / 国风视听</p></div>
+        <div><p class="meta-label">时长</p><p class="meta-value">2分钟</p></div>
+        <div><p class="meta-label">制作周期</p><p class="meta-value">7天</p></div>
+        <div><p class="meta-label">奖项</p><p class="meta-value">第六届国际大学生旅游文创设计大赛 · 铜奖</p></div>
+      </div>
+      <p class="project-desc">以海口芳园国际艺术村为拍摄对象的国风文旅短片，以八雅文化为线索，传递"慢生活·雅文化"理念。</p>
+      <p class="project-roles">负责：编导、策划统筹、视听设计、拍摄执行、后期剪辑</p>
+      <a class="project-btn" onclick="openProject('fangyuan')">查看完整项目 <span class="arrow">→</span></a>
+    </div>
+    <div class="project-cover" style="aspect-ratio:4/3" onclick="openProject('fangyuan')">
+      <span class="cover-static-badge">国风文旅 · 获奖作品 · 2025</span>
+      <img src="media/fangyuan/img_738188c26e88feb78a1e2238366bb1fa.png" alt="仲夏·芳园">
+      <div class="cover-overlay"></div>
+      <div class="cover-info">
+        <p class="project-type">国风文旅 · 乡村文化</p>
+        <p class="project-name">仲夏·芳园</p>
+        <p class="project-year">2025</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Project Detail Overlays ===== -->
+<!-- Detail: 第二颗太阳 -->
+<div class="project-overlay" id="overlay-sun">
+  <button class="overlay-close" onclick="closeProject()">&times;</button>
+  <div class="overlay-content">
+    <div class="overlay-cover">
+      <iframe src="//player.bilibili.com/player.html?bvid=BV1AqgZ68EgF&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+    </div>
+    <h1 class="overlay-project-name">第二颗太阳 · The Second Sun</h1>
+    <p class="overlay-project-sub">当太阳仍在燃烧，光却再也无法抵达地球。</p>
+
+    <!-- 项目概览 -->
+    <div class="detail-block">
+      <h2>Project Overview</h2>
+      <div class="detail-grid">
+        <div class="detail-grid-item"><p class="dg-label">项目类型</p><p class="dg-value">AI 科幻漫剧 / AI 剧情概念短片</p></div>
+        <div class="detail-grid-item"><p class="dg-label">时长</p><p class="dg-value">90 秒</p></div>
+        <div class="detail-grid-item"><p class="dg-label">制作周期</p><p class="dg-value">7 天</p></div>
+        <div class="detail-grid-item"><p class="dg-label">我的职责</p><p class="dg-value">导演 / 编剧 / AI 视觉设计 / 后期制作</p></div>
+        <div class="detail-grid-item"><p class="dg-label">使用工具</p><p class="dg-value">ChatGPT, Midjourney, ComfyUI, 小云雀, LibTV, 即梦, Premiere Pro, After Effects</p></div>
+        <div class="detail-grid-item"><p class="dg-label">交付形式</p><p class="dg-value">90 秒 AI 科幻剧情短片</p></div>
+      </div>
+    </div>
+
+    <!-- 故事与创意 -->
+    <div class="detail-block">
+      <h2>Story &amp; Concept</h2>
+      <h3>从长篇世界观中提炼一条 90 秒悬念主线</h3>
+      <p>作品改编自原创长篇科幻 IP《第二颗太阳》，从完整世界观中提取"太阳熄灭、月亮异变、父亲失踪"三条核心线索。故事发生在公元 2179 年，太阳依然存在，却有一股未知力量阻止阳光抵达地球。全球陷入极寒永夜，异常明亮的月亮被人类视为最后的救赎——天文台守望者林昼却发现：月光并非希望，而是一场持续了数十亿年的监视。</p>
+      <p><strong style="color:var(--accent-warm-white)">情绪基调：</strong>压迫、悬疑、孤独、理性、被观看的不安。</p>
+    </div>
+
+    <!-- 剧本拆解 -->
+    <div class="detail-block">
+      <h2>Script Breakdown</h2>
+      <p>从长篇科幻文本中提取关键人物（林昼、林鹤洲、幼年林昼）、核心场景（天文台、地下资料室、冰封城市）和情绪节点。采用<strong style="color:var(--accent-warm-white)">非线性冷开场</strong>结构：先展示警示笔记，再回溯灾变过程，最后回归月光——让观众从第一秒就带着"为什么不能相信月亮"的问题进入故事。</p>
+    </div>
+
+    <!-- 分镜设计 -->
+    <div class="detail-block">
+      <h2>Storyboard Design</h2>
+      <div class="storyboard-shot">
+        <div class="sb-num">01</div>
+        <div class="sb-info">
+          <span class="sb-label">景别</span><span class="sb-value">极近特写</span>
+          <span class="sb-label">运镜</span><span class="sb-value">静止 + 呼吸式推进</span>
+          <span class="sb-label">情绪</span><span class="sb-value">静默 / 不安 / 被观察</span>
+          <span class="sb-label">内容</span><span class="sb-value">泛黄笔记，"如果月亮开始发光，不要相信它。"冷白月光如扫描线扫过</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">02</div>
+        <div class="sb-info">
+          <span class="sb-label">景别</span><span class="sb-value">全景 · 24mm 广角</span>
+          <span class="sb-label">运镜</span><span class="sb-value">轨道横移绕半圈</span>
+          <span class="sb-label">情绪</span><span class="sb-value">孤独 / 冷静 / 未知逼近</span>
+          <span class="sb-label">内容</span><span class="sb-value">林昼站在破碎天文台圆顶下，月光从穹顶切入，人物渺小</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">03</div>
+        <div class="sb-info">
+          <span class="sb-label">景别</span><span class="sb-value">特写 · 85mm</span>
+          <span class="sb-label">运镜</span><span class="sb-value">匹配剪辑，门洞形接门缝</span>
+          <span class="sb-label">情绪</span><span class="sb-value">创伤 / 无力 / 记忆回返</span>
+          <span class="sb-label">内容</span><span class="sb-value">幼年林昼躲在门后，只露出一只眼睛，目睹父亲被带走</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">04</div>
+        <div class="sb-info">
+          <span class="sb-label">景别</span><span class="sb-value">主观远景 + 300mm 超长焦</span>
+          <span class="sb-label">运镜</span><span class="sb-value">穹顶上仰 → 月面特写</span>
+          <span class="sb-label">情绪</span><span class="sb-value">压迫 / 注视 / 悬念封口</span>
+          <span class="sb-label">内容</span><span class="sb-value">穹顶眼眶式构图，异常明亮的月亮如眼睛回看地球</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 角色与视觉设定 -->
+    <div class="detail-block">
+      <h2>Character &amp; Visual Design</h2>
+      <p>从人物功能出发设计角色：<strong style="color:var(--accent-warm-white)">林昼</strong>（冷峻研究者，凌乱黑发/苍白肤色/旧式极寒防护服）、<strong style="color:var(--accent-warm-white)">年轻林鹤洲</strong>（温和理性、白色科研服、隐藏恐惧的眼神）、<strong style="color:var(--accent-warm-white)">幼年林昼</strong>（门缝遮挡构图、含泪却倔强的眼睛）。通过身份锚点、Prompt 拆解和多视角迭代确保角色在不同镜头中的视觉连续性。</p>
+    </div>
+
+    <!-- AI 制作流程 -->
+    <div class="detail-block">
+      <h2>AI Production Pipeline</h2>
+      <div class="pipeline-flow">
+        <span class="pipeline-step">故事策划</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">剧本拆解</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">分镜设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">角色设定</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">AI 图像生成</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">AI 视频生成</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">后期剪辑</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">声音设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">最终成片</span>
+      </div>
+    </div>
+
+    <!-- 制作难点 -->
+    <div class="detail-block">
+      <h2>Challenges &amp; Solutions</h2>
+      <div class="challenge-grid">
+        <div class="challenge-item"><h4>角色一致性控制</h4><p>通过多视图设定图、固定 Prompt 模板和跨镜头对比，确保林昼在不同景别和时间线中保持视觉连续。</p></div>
+        <div class="challenge-item"><h4>镜头连续性</h4><p>分镜表中明确标注视线方向、动作衔接和道具位置，保障 AI 生成素材可进入后期剪辑。</p></div>
+        <div class="challenge-item"><h4>动作稳定性</h4><p>对人物漂移和动作失真的镜头重新生成与多轮筛选，保留符合物理逻辑的动态画面。</p></div>
+        <div class="challenge-item"><h4>画面风格统一</h4><p>固定低饱和蓝黑色调、统一的光线方向和材质质感，在 Premiere 中进一步做色彩匹配。</p></div>
+        <div class="challenge-item"><h4>AI 素材二次剪辑</h4><p>不直接使用 AI 生成镜头的原始顺序，而是按照电影剪辑思维重新组织节奏和转场。</p></div>
+        <div class="challenge-item"><h4>音画节奏控制</h4><p>通过低频心跳、风雪声和声音桥建立悬疑氛围，声音先于画面进入，增强沉浸感。</p></div>
+      </div>
+    </div>
+
+    <!-- 项目图集 -->
+    <div class="detail-block">
+      <h2>Production Stills</h2>
+      <div class="detail-gallery">
+        <img src="media/sun/img_1da046421c7b9022386bb07d573720be.png" alt="第二颗太阳 1">
+        <img src="media/sun/img_1f03e794d23e887e1731ecff50cf3efb.png" alt="第二颗太阳 2">
+        <img src="media/sun/img_2c8dfb02bc1d4b53d3beb9fd7ccdda82.png" alt="第二颗太阳 3">
+        <img src="media/sun/img_4218e667109449f5c53654444a8fa7a7.png" alt="第二颗太阳 4">
+        <img src="media/sun/img_462e95bf39cfae8bc400ff6ae19cd5b3.png" alt="第二颗太阳 5">
+        <img src="media/sun/img_69d46f5cb1da3447a1618f513afd4829.png" alt="第二颗太阳 6">
+        <img src="media/sun/img_8f99e4f71621c8655ab6c94824981360.png" alt="第二颗太阳 7">
+        <img src="media/sun/img_9ccd54be0fc556b0abcda963c75061e1.png" alt="第二颗太阳 8">
+        <img src="media/sun/img_b454840b7bd119b83df3760eb66c1124.png" alt="第二颗太阳 9">
+        <img src="media/sun/img_d4b7073b1af69d9a2927501fe5e122e5.png" alt="第二颗太阳 10">
+        <img src="media/sun/img_fbe4172919cdbc6393cfddf62b6c7cee.png" alt="第二颗太阳 11">
+        <img src="media/sun/img_fee64bd503d5d8ddfe7aec92c7c279f4.png" alt="第二颗太阳 12">
+      </div>
+    </div>
+
+    <!-- 项目复盘 -->
+    <div class="overlay-summary">
+      <h3>项目复盘</h3>
+      <p>《第二颗太阳》是我在 AI 漫剧方向的一次完整导演方法实践。在 7 天内将长篇科幻文本压缩为 90 秒剧情结构，通过人物关系、视觉母题、非线性剪辑和镜头设计建立悬念，同时完成从角色设定、Prompt 设计、AI 动态生成到后期剪辑与声音设计的全流程。项目验证了"剧本改编—分镜设计—AI 视觉控制—全流程交付"的能力闭环，也让我更清晰地认识到：AI 工具的核心价值不在于生成单张漂亮画面，而在于如何用导演思维组织、筛选和控制生成结果，使其服务于叙事。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail: 暗恋 -->
+<div class="project-overlay" id="overlay-crush">
+  <button class="overlay-close" onclick="closeProject()">&times;</button>
+  <div class="overlay-content">
+    <div class="overlay-cover">
+      <iframe src="//player.bilibili.com/player.html?bvid=BV1kqgZ6bEkz&page=1&autoplay=1&muted=1&danmaku=0&noheader=1&nologo=1" allowfullscreen style="width:100%;height:100%;border:none"></iframe>
+    </div>
+    <h1 class="overlay-project-name">暗恋</h1>
+    <p class="overlay-project-sub">有些喜欢，藏在每一次看似不经意的靠近里。</p>
+
+    <div class="detail-block">
+      <h2>Project Overview</h2>
+      <div class="detail-grid">
+        <div class="detail-grid-item"><p class="dg-label">项目类型</p><p class="dg-value">校园青春剧情短片</p></div>
+        <div class="detail-grid-item"><p class="dg-label">时长</p><p class="dg-value">3分40秒</p></div>
+        <div class="detail-grid-item"><p class="dg-label">制作周期</p><p class="dg-value">7 天</p></div>
+        <div class="detail-grid-item"><p class="dg-label">我的职责</p><p class="dg-value">导演 / 编剧 / 后期制作</p></div>
+        <div class="detail-grid-item"><p class="dg-label">使用工具</p><p class="dg-value">Premiere Pro, 剪映, Photoshop</p></div>
+        <div class="detail-grid-item"><p class="dg-label">交付形式</p><p class="dg-value">3分40秒真人剧情短片</p></div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Story &amp; Concept</h2>
+      <p>以"双向暗恋"为核心，围绕转校生 A 与同班同学 B 展开。A 总以念叨和管束的方式隐藏喜欢；B 看似被动，却在 A 胃疼时偷偷送药、在对方离开时默默整理书桌。一次意外的"表白练习"和一张写满攻略计划的纸条，让未说出口的心意逐渐浮出水面。</p>
+      <p><strong style="color:var(--accent-warm-white)">情绪基调：</strong>真实、轻松、克制、暧昧。自然光、校园感、生活化、青春留白。</p>
+    </div>
+
+    <div class="detail-block">
+      <h2>Director's Vision</h2>
+      <p>采用<strong style="color:var(--accent-warm-white)">递进式短剧结构</strong>：日常关系建立 → 表白练习制造乌龙 → 送药补充隐藏情感 → 攻略纸条揭开真相 → 追出教室开放式收尾。核心导演策略是用行为和细节代替直白告白——台词可以装作不在意，但眼神和动作必须暴露真实情绪。</p>
+    </div>
+
+    <div class="detail-block">
+      <h2>Storyboard Design</h2>
+      <div class="storyboard-shot">
+        <div class="sb-num">01</div>
+        <div class="sb-info">
+          <span class="sb-label">场景</span><span class="sb-value">练习表白被撞见</span>
+          <span class="sb-label">设计</span><span class="sb-value">A 独自练习 → B 画外进入 → 戛然而止</span>
+          <span class="sb-label">情绪</span><span class="sb-value">意外 / 尴尬 / 暧昧</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">02</div>
+        <div class="sb-info">
+          <span class="sb-label">场景</span><span class="sb-value">对着我练习</span>
+          <span class="sb-label">设计</span><span class="sb-value">B 让 A 对着自己练 → A 反问 → B 局促失语</span>
+          <span class="sb-label">情绪</span><span class="sb-value">试探 / 拉扯 / 心动</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">03</div>
+        <div class="sb-info">
+          <span class="sb-label">场景</span><span class="sb-value">送药</span>
+          <span class="sb-label">设计</span><span class="sb-value">药盒落桌特写 + B 故作平静</span>
+          <span class="sb-label">情绪</span><span class="sb-value">克制 / 关心 / 口是心非</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">04</div>
+        <div class="sb-info">
+          <span class="sb-label">场景</span><span class="sb-value">发现攻略纸条</span>
+          <span class="sb-label">设计</span><span class="sb-value">过肩 → 纸条特写 → 闪回 → B 冲出门</span>
+          <span class="sb-label">情绪</span><span class="sb-value">恍然大悟 / 情感确认</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">05</div>
+        <div class="sb-info">
+          <span class="sb-label">场景</span><span class="sb-value">追出教室</span>
+          <span class="sb-label">设计</span><span class="sb-value">手持跟拍 → B 叫住 A → A 回头 → 对视留白</span>
+          <span class="sb-label">情绪</span><span class="sb-value">急切 / 释然 / 心动留白</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Production Pipeline</h2>
+      <div class="pipeline-flow">
+        <span class="pipeline-step">剧本创作</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">分镜设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">演员确认</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">排练走位</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">实景拍摄</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">Premiere 剪辑</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">声音设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">最终成片</span>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Production Stills</h2>
+      <div class="detail-gallery">
+        <img src="media/crush/img_1d0075bba6abbbfa0aca13343a2dd412.png" alt="暗恋 1">
+        <img src="media/crush/img_3af980bf3677cdbd2ca383f88887a227.png" alt="暗恋 2">
+        <img src="media/crush/img_464c49d6b26612f321d957a4f8fd7175.png" alt="暗恋 3">
+        <img src="media/crush/img_4e5da31cebd87d995b0f0b834869bb01.png" alt="暗恋 4">
+        <img src="media/crush/img_64b21171e9097ecb87c40186ecc9fcd5.png" alt="暗恋 5">
+        <img src="media/crush/img_9e22a5de6c69c48edcf99e2672ef816d.png" alt="暗恋 6">
+        <img src="media/crush/img_a3bc115698a1ae359ce39f30f18965f9.png" alt="暗恋 7">
+        <img src="media/crush/img_a40aef4e66ec6d1819d24a6134d95a3c.png" alt="暗恋 8">
+        <img src="media/crush/img_cbd649686cb901ff44bf25932c71aec5.png" alt="暗恋 9">
+        <img src="media/crush/img_f156f5c0b2247967b6337f6b732c19b0.png" alt="暗恋 10">
+        <img src="media/crush/img_f81bef21ac7e3582484e1eb7407034a0.png" alt="暗恋 11">
+        <img src="media/crush/img_fd041d418b3474a7987b3867a1264503.png" alt="暗恋 12">
+      </div>
+    </div>
+
+    <div class="overlay-summary">
+      <h3>项目复盘</h3>
+      <p>《暗恋》让我完成了从文字剧本到真人影像的完整导演实践。在有限时长内建立人物、铺垫情感并完成双向暗恋的剧情闭环。核心收获是：细腻的情绪并不依赖大量台词，而来自人物行为、演员反应与镜头节奏的共同作用。</p>
+    </div>
+  </div>
+</div>
+
+<!-- Detail: 仲夏芳园 -->
+<div class="project-overlay" id="overlay-fangyuan">
+  <button class="overlay-close" onclick="closeProject()">&times;</button>
+  <div class="overlay-content">
+    <div class="overlay-cover">
+      <video src="media/fangyuan/video.mp4" controls controlsList="nodownload" disablepictureinpicture playsinline style="width:100%;height:100%;object-fit:cover"></video>
+    </div>
+    <h1 class="overlay-project-name">仲夏·芳园</h1>
+    <p class="overlay-project-sub">在一方荷塘与八雅文化之间，重新发现乡村生活的诗意。</p>
+
+    <div class="detail-block">
+      <h2>Project Overview</h2>
+      <div class="detail-grid">
+        <div class="detail-grid-item"><p class="dg-label">项目类型</p><p class="dg-value">国风文旅影像 / 乡村文化传播</p></div>
+        <div class="detail-grid-item"><p class="dg-label">时长</p><p class="dg-value">2 分钟</p></div>
+        <div class="detail-grid-item"><p class="dg-label">制作周期</p><p class="dg-value">7 天</p></div>
+        <div class="detail-grid-item"><p class="dg-label">我的职责</p><p class="dg-value">编导 / 策划统筹 / 视听设计 / 拍摄执行 / 后期剪辑</p></div>
+        <div class="detail-grid-item"><p class="dg-label">使用工具</p><p class="dg-value">Premiere Pro, Photoshop</p></div>
+        <div class="detail-grid-item"><p class="dg-label">项目成果</p><p class="dg-value">第六届国际大学生旅游文创设计大赛 · 数字媒体类铜奖</p></div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Story &amp; Concept</h2>
+      <p>以海口芳园国际艺术村为拍摄对象，将"琴、棋、书、画、诗、酒、花、茶"八雅文化作为内容线索，通过荷塘栈道、乡村民宿、汉服体验和艺术研学等场景，呈现芳园村自然、人文与产业融合的独特气质。核心主题：<strong style="color:var(--accent-warm-white)">文化不只是被保存的传统，也可以成为乡村更新与产业发展的动力。</strong></p>
+      <p>叙事核心不是"介绍景点"，而是带领观众从城市快节奏中抽离，进入一个由自然、传统文化和乡村生活共同构成的东方审美空间。</p>
+    </div>
+
+    <div class="detail-block">
+      <h2>Narrative Structure</h2>
+      <p>采用<strong style="color:var(--accent-warm-white)">三段式递进结构</strong>：</p>
+      <p><strong>第一阶段｜风光入境</strong>——荷塘、栈道、村落建筑，慢节奏空镜建立宁静雅致基调。</p>
+      <p><strong>第二阶段｜人文体验</strong>——人物进入画面，汉服、民宿、艺术研学，从"观看景物"转向"进入生活"。</p>
+      <p><strong>第三阶段｜价值升华</strong>——文旅业态与艺术乡村定位呈现，传递文化赋能乡村振兴的主题。</p>
+    </div>
+
+    <div class="detail-block">
+      <h2>Storyboard Design</h2>
+      <div class="storyboard-shot">
+        <div class="sb-num">01</div>
+        <div class="sb-info">
+          <span class="sb-label">镜号</span><span class="sb-value">仲夏入园 · 大全景</span>
+          <span class="sb-label">运镜</span><span class="sb-value">缓慢推进 / 轻微横移</span>
+          <span class="sb-label">情绪</span><span class="sb-value">宁静 / 开阔 / 初见</span>
+          <span class="sb-label">内容</span><span class="sb-value">芳园村整体空间 + 大片荷塘，人物未出现，环境先建立气质</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">02</div>
+        <div class="sb-info">
+          <span class="sb-label">镜号</span><span class="sb-value">漫步荷塘 · 全景转中景</span>
+          <span class="sb-label">运镜</span><span class="sb-value">侧向跟拍 / 背后跟拍</span>
+          <span class="sb-label">情绪</span><span class="sb-value">松弛 / 沉浸 / 清雅</span>
+          <span class="sb-label">内容</span><span class="sb-value">人物沿栈道行走，栈道作为引导线，人物位于三分之一处</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">03</div>
+        <div class="sb-info">
+          <span class="sb-label">镜号</span><span class="sb-value">汉服与八雅 · 中景 + 细节特写</span>
+          <span class="sb-label">运镜</span><span class="sb-value">人物中景 → 特写切换（衣袖/茶具/书页）</span>
+          <span class="sb-label">情绪</span><span class="sb-value">雅致 / 细腻 / 东方意境</span>
+          <span class="sb-label">内容</span><span class="sb-value">通过服装、器物和动作表现传统文化，动作匹配剪辑</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">04</div>
+        <div class="sb-info">
+          <span class="sb-label">镜号</span><span class="sb-value">民宿与研学 · 空间全景 + 人物中近景</span>
+          <span class="sb-label">运镜</span><span class="sb-value">推门/穿廊动作完成场景转换</span>
+          <span class="sb-label">情绪</span><span class="sb-value">生活感 / 温度 / 文化体验</span>
+          <span class="sb-label">内容</span><span class="sb-value">庭院、艺术空间和研学活动，从"看风景"转向"体验生活"</span>
+        </div>
+      </div>
+      <div class="storyboard-shot">
+        <div class="sb-num">05</div>
+        <div class="sb-info">
+          <span class="sb-label">镜号</span><span class="sb-value">人与村落共生 · 远景 / 大全景</span>
+          <span class="sb-label">运镜</span><span class="sb-value">稳定长镜头 / 缓慢拉远</span>
+          <span class="sb-label">情绪</span><span class="sb-value">舒展 / 余韵 / 希望</span>
+          <span class="sb-label">内容</span><span class="sb-value">人物融入芳园村环境，完成主题升华</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Production Pipeline</h2>
+      <div class="pipeline-flow">
+        <span class="pipeline-step">文化调研</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">主题策划</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">分镜设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">场地确认</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">实景拍摄</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">Premiere 剪辑</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">色彩统一</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">声音设计</span><span class="pipeline-arrow">→</span>
+        <span class="pipeline-step">最终成片</span>
+      </div>
+    </div>
+
+    <div class="detail-block">
+      <h2>Production Stills</h2>
+      <div class="detail-gallery">
+        <img src="media/fangyuan/img_79a3747c5266d0b14add867c18c5f71e.png" alt="仲夏芳园 1">
+        <img src="media/fangyuan/img_879948f6bc860d4f988419ac20dd12ca.png" alt="仲夏芳园 2">
+        <img src="media/fangyuan/img_a39b1390258b71bbd9ae66535f7ac298.png" alt="仲夏芳园 3">
+        <img src="media/fangyuan/img_ddb4e192b7fcbe2a5cc55a904a53ab10.png" alt="仲夏芳园 4">
+        <img src="media/fangyuan/img_f356f5fa248812a09d04c8f33f9f881a.png" alt="仲夏芳园 5">
+        <img src="media/fangyuan/img_ff1a09872adedc3a1f10477e4bf8fe5e.png" alt="仲夏芳园 6">
+      </div>
+    </div>
+
+    <div class="overlay-summary">
+      <h3>项目复盘</h3>
+      <p>《仲夏·芳园》让我完成了从地方文化调研到文旅影像表达的完整实践。在 7 天内独立完成前期策划、主题提炼、分镜设计、场地确认、实景拍摄、视听编排与后期剪辑。作品获得第六届国际大学生旅游文创设计大赛数字媒体类铜奖。核心领悟：优秀的文旅内容不是对景点的简单罗列，而是通过镜头重新建立观众与一片土地之间的情感关系。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== About Section ===== -->
+<section class="about-section" id="about">
+  <div class="section fade-in">
+    <p class="section-label">About</p>
+    <h2 class="section-title">关于我</h2>
+    <p class="section-subtitle">一名专注于 AIGC 视频创作的编导型创作者。</p>
+    <div class="about-grid">
+      <div class="about-portrait">
+        <img src="portrait.jpg" alt="王芹 Waverly Qiana" onerror="this.style.display='none';this.parentElement.style.minHeight='400px';this.parentElement.style.background='var(--bg-elevated)';this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.parentElement.innerHTML='<p style=color:var(--text-muted);font-size:.8rem;letter-spacing:.1em>PORTRAIT</p>'">
+      </div>
+      <div class="about-text">
+        <p class="about-intro">我是一名专注于 <strong>AIGC 视频创作</strong>的编导型创作者，拥有 AI 漫剧作品和编导项目经验。</p>
+        <p class="about-intro">我擅长将<strong>故事策划、剧本拆解、分镜设计、AI 视觉生成</strong>和<strong>后期剪辑</strong>整合为完整的视频制作流程。</p>
+        <p class="about-intro">我关注的不只是生成画面，而是如何通过<strong>镜头、节奏、情绪和声音</strong>讲好一个故事。</p>
+        <div class="about-tags">
+          <span class="about-tag">Story Development</span>
+          <span class="about-tag">Script Breakdown</span>
+          <span class="about-tag">Storyboarding</span>
+          <span class="about-tag">Visual Direction</span>
+          <span class="about-tag">AI Image Generation</span>
+          <span class="about-tag">AI Video Generation</span>
+          <span class="about-tag">Film Editing</span>
+          <span class="about-tag">Sound Design</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Skills Section ===== -->
+<section class="skills-section" id="skills">
+  <div class="section fade-in">
+    <p class="section-label">Tools &amp; Skills</p>
+    <h2 class="section-title">工具与技能</h2>
+    <p class="section-subtitle">按工作环节分类的能力体系。</p>
+    <div class="skills-grid reveal-stagger fade-in">
+      <div class="skill-category">
+        <h3 class="cat-title"><span class="cat-num">01</span>前期策划</h3>
+        <ul>
+          <li>故事策划</li>
+          <li>剧本拆解</li>
+          <li>人物设定</li>
+          <li>分镜设计</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <h3 class="cat-title"><span class="cat-num">02</span>AI 视觉</h3>
+        <ul>
+          <li>Midjourney</li>
+          <li>Flux</li>
+          <li>ChatGPT</li>
+          <li>ComfyUI</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <h3 class="cat-title"><span class="cat-num">03</span>AI 视频</h3>
+        <ul>
+          <li>小云雀</li>
+          <li>LibTV</li>
+          <li>即梦</li>
+          <li>其他可替换工具</li>
+        </ul>
+      </div>
+      <div class="skill-category">
+        <h3 class="cat-title"><span class="cat-num">04</span>后期制作</h3>
+        <ul>
+          <li>Premiere Pro</li>
+          <li>After Effects</li>
+          <li>剪映</li>
+          <li>Photoshop</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Experience Section ===== -->
+<section class="experience-section" id="experience">
+  <div class="section fade-in">
+    <p class="section-label">Experience</p>
+    <h2 class="section-title">编导经历</h2>
+    <p class="section-subtitle">从院线实习导演到制片统筹、卫视内容制作——在真实项目中建立全流程制作能力。</p>
+    <div class="experience-timeline">
+      <div class="exp-item">
+        <div class="exp-header">
+          <span class="exp-title">微电影《圆的尽头是什么？》</span>
+          <span class="exp-time">2024</span>
+        </div>
+        <p class="exp-role">制片统筹 · 10+人剧组 · 国家级三等奖</p>
+        <p class="exp-details">担任项目制片主任，围绕最终成片统筹10余人创作团队，负责拍摄排期制定、场地协调、人员沟通、进度盯控及突发风险预案，推动项目从拍摄筹备到成片交付顺利落地。作品最终获得国家级三等奖。这段经历让我建立了以成片结果为导向的项目管理意识，能够在创意需求、拍摄条件和制作周期之间快速协调资源、解决问题。</p>
+        <div class="exp-photos">
+          <img src="media/experience/yuan/img_40331652722ce72e6b4a1b0705d42fde.jpg" alt="圆的尽头是什么？1">
+          <img src="media/experience/yuan/img_36558c268fcf7b8f9f51e9543120b0a7.jpg" alt="圆的尽头是什么？2">
+          <img src="media/experience/yuan/img_d9287ac20657cf8dfedb1ff5773b6fb7.jpg" alt="圆的尽头是什么？3">
+          <img src="media/experience/yuan/img_149f40777b69a3e041c0612a79c17d07.png" alt="圆的尽头是什么？4">
+        </div>
+        <p class="exp-details" style="margin-top:6px"><strong style="color:var(--accent-gold-dim)">能力关键词：</strong>项目统筹 · 拍摄排期 · 团队协作 · 现场应变 · 成片交付</p>
+      </div>
+      <div class="exp-item">
+        <div class="exp-header">
+          <span class="exp-title">院线电影《不会有人忘记你》</span>
+          <span class="exp-time">2024–2025</span>
+        </div>
+        <p class="exp-role">实习导演 · 院线剧组 · 影视工业化流程实践</p>
+        <p class="exp-details">作为实习导演全程跟组，参与场记调度、分镜沟通及不同工种之间的现场协调，协助导演组推进镜头执行和拍摄进度。通过院线电影剧组实践，熟悉导演、摄影、演员、场务等部门之间的协作关系，并形成了对现场节奏、镜头衔接和工业化拍摄流程的实际认知，能够快速理解导演意图并配合完成现场执行。</p>
+        <div class="exp-photos">
+          <img src="media/experience/movie-set/img_06dace380ecc7979005d99301e7261c1.jpg" alt="不会有人忘记你 1">
+          <img src="media/experience/movie-set/img_40d46fe43fb686e8aa9c4bc6105db52d.jpg" alt="不会有人忘记你 2">
+          <img src="media/experience/movie-set/img_4ae0d7eccfee5ba25a6aac4d644645f3.png" alt="不会有人忘记你 3">
+          <img src="media/experience/movie-set/img_77c3335d2441697f80a9e7eff8e03043.png" alt="不会有人忘记你 4">
+          <img src="media/experience/movie-set/img_9b47215f5d424a62d29adb6c5375844d.jpg" alt="不会有人忘记你 5">
+          <img src="media/experience/movie-set/img_a93a9aa4ad31dd6295bc32ca21a0c5d1.jpg" alt="不会有人忘记你 6">
+          <img src="media/experience/movie-set/img_bc419985f246cb04b3cff42c5a26c7d7.jpg" alt="不会有人忘记你 7">
+          <img src="media/experience/movie-set/img_c064fae03e7674846f4b4999af4f4aa1.jpg" alt="不会有人忘记你 8">
+        </div>
+        <p class="exp-details" style="margin-top:6px"><strong style="color:var(--accent-gold-dim)">能力关键词：</strong>分镜理解 · 现场调度 · 跨部门沟通 · 导演意图执行 · 剧组流程</p>
+      </div>
+      <div class="exp-item">
+        <div class="exp-header">
+          <span class="exp-title">中国中文卫视专题内容制作</span>
+          <span class="exp-time">2024–2025</span>
+        </div>
+        <p class="exp-role">内容策划与制作 · 50+篇/条作品 · 累计播放量 10 万+</p>
+        <p class="exp-details">参与电视新闻及专题视频内容制作，完成50余篇新闻稿件与视频作品，涉及"两会"、反法西斯战争胜利80周年等重要主题，累计点击量超过10万，多篇内容被学习强国、中国教育在线等平台转载。在高频内容生产过程中，持续训练信息提炼、叙事结构搭建、关键画面选择与节奏把控能力，并能够根据不同传播平台调整内容表达方式。</p>
+        <div class="exp-photos">
+          <img src="media/experience/weishi/img_628d791097df497694f8024060da0864.jpg" alt="卫视内容 1">
+          <img src="media/experience/weishi/img_3919b4f0d26af1a87654bb755e2e4521.png" alt="卫视内容 2">
+          <img src="media/experience/weishi/img_49ec2edb22059c5f55c1a030fcb6e1f8.png" alt="卫视内容 3">
+          <img src="media/experience/weishi/img_33450fc271f8baf4fdb6b548eaae1cf4.png" alt="卫视内容 4">
+          <img src="media/experience/weishi/img_ac3c97f2c9d139e93f7dee9459d9d3b6.png" alt="卫视内容 5">
+          <img src="media/experience/weishi/img_b155bf212cd1e4ca12465132bc2c29b9.jpg" alt="卫视内容 6">
+          <img src="media/experience/weishi/img_d12bd6e4d68a5687216a7b34000f1627.png" alt="卫视内容 7">
+          <img src="media/experience/weishi/img_d9855c81075008df34d3c5d6e0665e12.png" alt="卫视内容 8">
+          <img src="media/experience/weishi/img_e37b3a2d63d8c1b48833fbcbd51ae301.png" alt="卫视内容 9">
+          <img src="media/experience/weishi/img_f2c3b3ee25e70011c1a5a4a87f4b8556.png" alt="卫视内容 10">
+        </div>
+        <p class="exp-details" style="margin-top:6px"><strong style="color:var(--accent-gold-dim)">能力关键词：</strong>选题提炼 · 内容策划 · 叙事结构 · 画面组织 · 平台适配</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Contact Section ===== -->
+<section class="contact-section" id="contact">
+  <div class="fade-in">
+    <p class="section-label">Contact</p>
+    <h2 class="contact-cta">Let's Create<br>Something Memorable.</h2>
+    <p class="contact-sub">期待参与 AI 视频、AI 漫剧、短剧、广告与创新影像项目。</p>
+    <div class="contact-info-grid">
+      <div class="contact-info-item">
+        <p class="ci-label">Email</p>
+        <p class="ci-value">1439303514@qq.com</p>
+      </div>
+    </div>
+    <a href="mailto:1439303514@qq.com" class="contact-btn">Contact Me</a>
+  </div>
+</section>
+
+<!-- ===== Lightbox ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">&times;</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+  <p>&copy; 2026 Waverly Qiana. All Rights Reserved.</p>
+</footer>
+
+<script>
+// ===== Showreel Controls =====
+const showreelVideo = document.querySelector('.showreel-placeholder video');
+const playBtn = document.querySelector('.showreel-play-btn');
+const muteBtn = document.querySelector('.showreel-mute-btn');
+if (showreelVideo && playBtn) {
+  playBtn.addEventListener('click', () => {
+    if (showreelVideo.paused) { showreelVideo.play(); playBtn.innerHTML = '&#9646;&#9646;'; }
+    else { showreelVideo.pause(); playBtn.innerHTML = '&#9654;'; }
+  });
+}
+if (showreelVideo && muteBtn) {
+  muteBtn.addEventListener('click', () => {
+    showreelVideo.muted = !showreelVideo.muted;
+    muteBtn.innerHTML = showreelVideo.muted ? '&#9834;' : '&#9833;';
+  });
+}
+
+// ===== Hero background video: robust looping =====
+// Fix for cases where browser stops/pauses the auto-loop (e.g. tab freeze, codec hiccups)
+const heroVideo = document.querySelector('.hero-bg video');
+if (heroVideo) {
+  heroVideo.setAttribute('loop', '');
+  heroVideo.muted = true;
+  heroVideo.setAttribute('playsinline', '');
+  heroVideo.setAttribute('autoplay', '');
+  const restart = () => {
+    if (!heroVideo.paused) return;
+    heroVideo.currentTime = 0;
+    const p = heroVideo.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  };
+  heroVideo.addEventListener('ended', restart);
+  heroVideo.addEventListener('pause', () => {
+    // If pause happens unexpectedly (not from user), restart
+    if (!document.hidden) setTimeout(restart, 100);
+  });
+  // Periodic safety check: every 5s, ensure video is playing
+  setInterval(() => {
+    if (heroVideo.paused && !document.hidden) restart();
+  }, 5000);
+  // Also restart on visibility return
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) setTimeout(restart, 200);
+  });
+}
+
+// ===== Scroll-triggered Animations =====
+const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -60px 0px' };
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+// ===== Navigation Scroll Effect =====
+const nav = document.getElementById('nav');
+const navLinks = document.querySelectorAll('.nav-links a');
+const sections = document.querySelectorAll('section[id]');
+
+window.addEventListener('scroll', () => {
+  // Nav background
+  if (window.scrollY > 50) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+  
+  // Active section detection
+  let current = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop - 100;
+    if (window.scrollY >= sectionTop) {
+      current = section.getAttribute('id');
+    }
+  });
+  navLinks.forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) {
+      link.classList.add('active');
+    }
+  });
+});
+
+// ===== Mobile Nav Toggle =====
+const navToggle = document.getElementById('navToggle');
+const navLinksContainer = document.getElementById('navLinks');
+navToggle.addEventListener('click', () => {
+  navToggle.classList.toggle('active');
+  navLinksContainer.classList.toggle('open');
+});
+navLinksContainer.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    navToggle.classList.remove('active');
+    navLinksContainer.classList.remove('open');
+  });
+});
+
+// ===== Project Detail Overlay =====
+function openProject(id) {
+  const overlay = document.getElementById('overlay-' + id);
+  if (overlay) {
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    overlay.scrollTop = 0;
+  }
+}
+
+function closeProject() {
+  document.querySelectorAll('.project-overlay.active').forEach(overlay => {
+    // Pause and reset all videos inside the overlay before hiding it
+    overlay.querySelectorAll('video').forEach(v => {
+      try { v.pause(); v.currentTime = 0; } catch(e) {}
+    });
+    overlay.classList.remove('active');
+  });
+  document.body.style.overflow = '';
+}
+
+// Pause videos when overlay scrolls out of view (any video not in viewport)
+const videoVisibilityObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const video = entry.target;
+    if (!entry.isIntersecting) {
+      try { video.pause(); } catch(e) {}
+    }
+  });
+}, { threshold: 0.25 });
+
+// Watch all videos in overlays
+document.querySelectorAll('.project-overlay video').forEach(v => {
+  videoVisibilityObserver.observe(v);
+});
+
+// Pause all videos when page is hidden
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    document.querySelectorAll('video').forEach(v => {
+      try { v.pause(); } catch(e) {}
+    });
+  }
+});
+
+// Close overlay with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeProject();
+    closeLightbox();
+  }
+});
+
+// ===== Lightbox for experience photos (and any clickable img) =====
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+
+function openLightbox(src) {
+  if (!lightbox || !lightboxImg) return;
+  lightboxImg.src = src;
+  lightbox.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+  if (!lightbox) return;
+  // Allow click on image to close but not propagate
+  if (e && e.target.closest && e.target.closest('img') === lightboxImg) {
+    if (e.target === lightboxImg) return;
+  }
+  lightbox.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Bind all photos inside exp-photos containers
+document.querySelectorAll('.exp-photos img').forEach(img => {
+  img.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openLightbox(img.src);
+  });
+});
+
+// Close overlay when clicking outside content
+document.querySelectorAll('.project-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeProject();
+  });
+});
+
+// ===== Smooth scroll for nav links =====
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ===== Cursor Accent =====
+const cursorAccent = document.getElementById('cursorAccent');
+let cursorVisible = false;
+document.addEventListener('mousemove', (e) => {
+  if (cursorAccent) {
+    cursorAccent.style.left = e.clientX + 'px';
+    cursorAccent.style.top = e.clientY + 'px';
+    if (!cursorVisible) { cursorAccent.style.opacity = '.5'; cursorVisible = true; }
+  }
+});
+document.addEventListener('mouseleave', () => {
+  if (cursorAccent) { cursorAccent.style.opacity = '0'; cursorVisible = false; }
+});
+
+// ===== Parallax on scroll =====
+const parallaxEls = document.querySelectorAll('.parallax');
+window.addEventListener('scroll', () => {
+  parallaxEls.forEach(el => {
+    const speed = parseFloat(el.getAttribute('data-speed') || '0.15');
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      const offset = (rect.top - window.innerHeight) * speed;
+      el.style.transform = `translateY(${offset}px)`;
+    }
+  });
+}, { passive: true });
+
+// ===== Enhanced Observer: staggered + image reveal =====
+const enhancedObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      // If target has children with reveal-left/right, stagger them
+      const children = entry.target.querySelectorAll('.reveal-left, .reveal-right');
+      children.forEach((c, i) => {
+        c.style.transitionDelay = (i * .12) + 's';
+        setTimeout(() => c.classList.add('visible'), 50);
+      });
+      // Image reveal effects
+      entry.target.querySelectorAll('.img-reveal').forEach(i => i.classList.add('visible'));
+      // Text reveal
+      entry.target.querySelectorAll('.text-reveal').forEach(t => t.classList.add('visible'));
+      // Zoom reveal
+      entry.target.querySelectorAll('.zoom-reveal').forEach(z => z.classList.add('visible'));
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal-stagger, .img-reveal, .text-reveal, .zoom-reveal, .reveal-left, .reveal-right').forEach(el => {
+  enhancedObserver.observe(el);
+});
+
+// ===== Card tilt on hover =====
+document.querySelectorAll('.glow-hover, .glow-hover-dark').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / centerY * -3;
+    const rotateY = (x - centerX) / centerX * 3;
+    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(800px) rotateX(0) rotateY(0) translateY(0)';
+    card.style.transition = 'transform .6s cubic-bezier(.22,1,.36,1)';
+  });
+});
+</script>
+
+</body>
+</html>
